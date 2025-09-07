@@ -10,6 +10,8 @@ import copy
 from retry import retry
 from .constants import *
 
+from loguru import logger
+
 
 class BienIciScraper: 
 
@@ -147,14 +149,14 @@ class BienIciScraper:
 		location_ids = []
 		for l in locations: 
 			url = 'https://res.bienici.com/suggest.json?q=%s' % l
-			print('searching location id for %s' % l)
+			logger.info('searching location id for %s' % l)
 			response = requests.get(url, headers=HEADERS)
 			assert response.status_code == 200
 			location_dict = response.json()[0]
 			location_ids_list = location_dict["zoneIds"]
 			assert location_ids_list
 			for l in location_ids_list: 
-				print('found %s' % l)
+				logger.info('found %s' % l)
 				location_ids.append(l)
 		return location_ids
 
@@ -172,7 +174,7 @@ class BienIciScraper:
 		Raises:
 			AssertionError: If the response status code is not 200 (OK) after retrying.
 		"""
-		print('going to page: %s' % self.page)
+		logger.info('going to page: %s' % self.page)
 		response = self.s.get('https://www.bienici.com/realEstateAds.json', params=params, headers=HEADERS)
 		assert response.status_code == 200
 		return response
@@ -210,8 +212,8 @@ class BienIciScraper:
 			assert all([total_available_results, total_results_to_scrape])
 
 			if self.page == 1: 
-				print("total results: %s" % total_available_results)
-				print("total results to scrape: %s" % total_results_to_scrape)
+				logger.info("total results: %s" % total_available_results)
+				logger.info("total results to scrape: %s" % total_results_to_scrape)
 
 			ads = response.json()["realEstateAds"]
 			for ad in ads: 
@@ -222,12 +224,12 @@ class BienIciScraper:
 				
 				if self.limit: 
 					if self.total_scraped_results == self.limit: 
-						print('limit reached')
+						logger.info('limit reached')
 						self.write_to_csv()
 						return
 
 			if self.total_scraped_results >= total_available_results: 
-				print('all data collected')
+				logger.info('all data collected')
 				break
 
 			self.page += 1
@@ -275,7 +277,7 @@ class BienIciScraper:
 			photos
 		]
 
-		print("scraped: %s" % title)
+		logger.info("scraped: %s" % title)
 		
 		d = dict(zip(FIELDNAMES, VALUES))	
 		return d
@@ -297,7 +299,7 @@ class BienIciScraper:
 			for d in self.DATA: 
 				writer.writerow(d)
 
-		print(f'csv written in {self.output}')
+		logger.info(f'csv written in {self.output}')
 
 def scrape(
 		url="https://www.bienici.com/recherche/achat/france/chateau",
@@ -330,8 +332,8 @@ def scrape(
 	
 	elapsed = time.perf_counter() - s
 	elapsed_formatted = "{:.2f}".format(elapsed)
-	print("elapsed:", elapsed_formatted, "s")
-	print('''~~ success
+	logger.info("elapsed:", elapsed_formatted, "s")
+	logger.info('''~~ success
  _       _         _            
 | |     | |       | |          
 | | ___ | |__  ___| |_ __ __  
