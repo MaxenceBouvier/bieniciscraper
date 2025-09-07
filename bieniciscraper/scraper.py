@@ -297,7 +297,7 @@ class BienIciScraper:
 			for d in self.DATA: 
 				writer.writerow(d)
 
-		print('csv written')
+		print(f'csv written in {self.output}')
 
 def scrape(
 		url="https://www.bienici.com/recherche/achat/france/chateau",
